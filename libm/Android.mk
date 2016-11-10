@@ -22,6 +22,7 @@ LOCAL_SRC_FILES := \
     upstream-freebsd/lib/msun/bsdsrc/b_tgamma.c \
     upstream-freebsd/lib/msun/src/catrig.c \
     upstream-freebsd/lib/msun/src/catrigf.c \
+    upstream-freebsd/lib/msun/src/dunder.c \
     upstream-freebsd/lib/msun/src/e_acos.c \
     upstream-freebsd/lib/msun/src/e_acosf.c \
     upstream-freebsd/lib/msun/src/e_acosh.c \
@@ -72,6 +73,7 @@ LOCAL_SRC_FILES := \
     upstream-freebsd/lib/msun/src/e_sinhf.c \
     upstream-freebsd/lib/msun/src/e_sqrt.c \
     upstream-freebsd/lib/msun/src/e_sqrtf.c \
+    upstream-freebsd/lib/msun/src/funder.c \
     upstream-freebsd/lib/msun/src/imprecise.c \
     upstream-freebsd/lib/msun/src/k_cos.c \
     upstream-freebsd/lib/msun/src/k_cosf.c \
@@ -185,6 +187,31 @@ LOCAL_SRC_FILES := \
     upstream-freebsd/lib/msun/src/w_cabsl.c \
     upstream-freebsd/lib/msun/src/w_drem.c \
     upstream-freebsd/lib/msun/src/w_dremf.c \
+
+# The FreeBSD complex functions appear to be better, but they're incomplete.
+# We take the FreeBSD implementations when they exist, but fill out the rest
+# of <complex.h> from NetBSD...
+LOCAL_SRC_FILES += \
+    upstream-netbsd/lib/libm/complex/cacoshl.c \
+    upstream-netbsd/lib/libm/complex/cacosl.c \
+    upstream-netbsd/lib/libm/complex/casinhl.c \
+    upstream-netbsd/lib/libm/complex/casinl.c \
+    upstream-netbsd/lib/libm/complex/catanhl.c \
+    upstream-netbsd/lib/libm/complex/catanl.c \
+    upstream-netbsd/lib/libm/complex/ccoshl.c \
+    upstream-netbsd/lib/libm/complex/ccosl.c \
+    upstream-netbsd/lib/libm/complex/cephes_subrl.c \
+    upstream-netbsd/lib/libm/complex/cexpl.c \
+    upstream-netbsd/lib/libm/complex/clog.c \
+    upstream-netbsd/lib/libm/complex/clogf.c \
+    upstream-netbsd/lib/libm/complex/clogl.c \
+    upstream-netbsd/lib/libm/complex/cpow.c \
+    upstream-netbsd/lib/libm/complex/cpowf.c \
+    upstream-netbsd/lib/libm/complex/cpowl.c \
+    upstream-netbsd/lib/libm/complex/csinhl.c \
+    upstream-netbsd/lib/libm/complex/csinl.c \
+    upstream-netbsd/lib/libm/complex/ctanhl.c \
+    upstream-netbsd/lib/libm/complex/ctanl.c \
 
 LOCAL_SRC_FILES_32 += \
     fake_long_double.c \
@@ -506,7 +533,6 @@ LOCAL_C_INCLUDES_x86 += $(LOCAL_PATH)/i387
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/upstream-freebsd/lib/msun/src/
 LOCAL_C_INCLUDES_64 += $(LOCAL_PATH)/upstream-freebsd/lib/msun/ld128/
 
-LOCAL_CLANG := $(libm_clang)
 LOCAL_ARM_MODE := arm
 LOCAL_CFLAGS := \
     -D__BIONIC_NO_MATH_INLINES \
@@ -519,6 +545,9 @@ LOCAL_CFLAGS := \
     -Wno-uninitialized \
     -Wno-unknown-pragmas \
     -fvisibility=hidden \
+
+LOCAL_CONLYFLAGS := \
+    -std=gnu11 \
 
 LOCAL_ASFLAGS := \
     -Ibionic/libc \
@@ -561,7 +590,6 @@ LOCAL_LDFLAGS_x86_64 += -Wl,--version-script,$(LOCAL_PATH)/libm.x86_64.map
 
 
 LOCAL_MODULE := libm
-LOCAL_CLANG := $(libm_clang)
 LOCAL_SYSTEM_SHARED_LIBRARIES := libc
 LOCAL_WHOLE_STATIC_LIBRARIES := libm
 

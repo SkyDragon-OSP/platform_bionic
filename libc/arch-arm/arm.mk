@@ -1,7 +1,6 @@
 # 32-bit arm.
 
 libc_bionic_src_files_arm += \
-    arch-arm/generic/bionic/memchr.S \
     arch-arm/generic/bionic/memcmp.S \
     arch-arm/generic/bionic/memcpy.S \
     arch-arm/generic/bionic/memset.S \
@@ -14,9 +13,7 @@ libc_bionic_src_files_exclude_arm += \
     bionic/__memset_chk.cpp \
 
 libc_openbsd_src_files_exclude_arm += \
-    upstream-openbsd/lib/libc/string/memchr.c \
     upstream-openbsd/lib/libc/string/strcpy.c \
-
 
 #
 # Inherently architecture-specific code.

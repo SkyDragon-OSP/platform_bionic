@@ -368,7 +368,7 @@ union local_storage {
   } u;
 };
 
-static int __bionic_open_tzdata(const char*, int32_t*);
+static int __bionic_open_tzdata(const char*);
 
 /* Load tz data from the file named NAME into *SP.  Read extended
    format if DOEXTEND.  Use *LSP for temporary storage.  Return 0 on
@@ -396,9 +396,8 @@ tzloadbody(char const *name, struct state *sp, bool doextend,
 		  return EINVAL;
 	}
 
-#if defined(__BIONIC__)
-	int32_t entry_length;
-	fid = __bionic_open_tzdata(name, &entry_length);
+#if defined(__ANDROID__)
+	fid = __bionic_open_tzdata(name);
 #else
 	if (name[0] == ':')
 		++name;
@@ -424,11 +423,7 @@ tzloadbody(char const *name, struct state *sp, bool doextend,
 	if (fid < 0)
 	  return errno;
 
-#if defined(__BIONIC__)
-	nread = read(fid, up->buf, entry_length);
-#else
 	nread = read(fid, up->buf, sizeof up->buf);
-#endif
 	if (nread < tzheadsize) {
 	  int err = nread < 0 ? errno : EINVAL;
 	  close(fid);
@@ -2329,8 +2324,7 @@ time(time_t *p)
 #include <arpa/inet.h> // For ntohl(3).
 
 static int __bionic_open_tzdata_path(const char* path_prefix_variable, const char* path_suffix,
-                                     const char* olson_id,
-                                     int32_t* entry_length) {
+                                     const char* olson_id) {
   const char* path_prefix = getenv(path_prefix_variable);
   if (path_prefix == NULL) {
     fprintf(stderr, "%s: %s not set!\n", __FUNCTION__, path_prefix_variable);
@@ -2428,7 +2422,6 @@ static int __bionic_open_tzdata_path(const char* path_prefix_variable, const cha
 
     if (strcmp(this_id, olson_id) == 0) {
       specific_zone_offset = ntohl(entry->start) + ntohl(header.data_offset);
-      *entry_length = ntohl(entry->length);
       break;
     }
 
@@ -2456,12 +2449,10 @@ static int __bionic_open_tzdata_path(const char* path_prefix_variable, const cha
   return fd;
 }
 
-static int __bionic_open_tzdata(const char* olson_id, int32_t* entry_length) {
-  int fd = __bionic_open_tzdata_path("ANDROID_DATA", "/misc/zoneinfo/current/tzdata",
-                                     olson_id, entry_length);
+static int __bionic_open_tzdata(const char* olson_id) {
+  int fd = __bionic_open_tzdata_path("ANDROID_DATA", "/misc/zoneinfo/current/tzdata", olson_id);
   if (fd < 0) {
-    fd = __bionic_open_tzdata_path("ANDROID_ROOT", "/usr/share/zoneinfo/tzdata",
-                                   olson_id, entry_length);
+    fd = __bionic_open_tzdata_path("ANDROID_ROOT", "/usr/share/zoneinfo/tzdata", olson_id);
     if (fd == -2) {
       // The first thing that 'recovery' does is try to format the current time. It doesn't have
       // any tzdata available, so we must not abort here --- doing so breaks the recovery image!
